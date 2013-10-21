@@ -1,0 +1,16 @@
+h1 {
+    font-size: 70px;
+}
+h2 {
+    font-size: 40px;
+}
+li {
+    font-size: 20px;
+    list-style-type: none;
+}
+
+.floating-icon {
+    position: fixed;
+    top: 1em;
+    right: 1em;
+}

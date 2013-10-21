@@ -1,0 +1,63 @@
+@(title: String)(content: Html)
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>@title</title>
+        <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/main.css")"/>
+        <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/bootstrap.min.css")"/>
+        <link rel="shortcut icon" type="image/png" href="@routes.Assets.at("images/favicon.png")"/>
+        <script src="@routes.Assets.at("javascripts/jquery-1.9.0.min.js")" type="text/javascript"></script>
+        <script src="@routes.Assets.at("javascripts/jquery-ui.min.js")" type="text/javascript"></script>
+        <script src="@routes.Assets.at("javascripts/animateText.js")" type="text/javascript"></script>
+
+        <script type="text/javascript">
+            function getHeadlines() {
+                $( '#headline-container' ).fadeOut( 'fast', function() { });
+                $( '#news-source').fadeOut('fast', function() {});
+
+                $.getJSON( '/feed', function( data ) {
+                    var source = 'CANNED SOURCE';
+                    var items = [];
+
+                    $.each( data, function( key, val ) {
+                        if('source' === key) {
+                            source = val;
+                        }
+                        if('headlines' === key) {
+                          $.each(val, function(index, headline) {
+                            items.push('<li>' + headline + '</li>');
+                          });
+                        }
+                    });
+                    $( '#news-source').text(source);
+                    var headlines = items.join('');
+                    $('#headlines').empty()
+                    $(headlines).appendTo('#headlines');
+
+                    $( '#news-source').fadeIn('fast', function() {});
+                    $( '#headline-container' ).fadeIn( 'slow', function() { });
+                });
+            }
+            window.setInterval(function() { getHeadlines(); }, 9000);
+        </script>
+    </head>
+
+    <body>
+        <div class='floating-icon'>
+            <img src="@routes.Assets.at("images/swansondontcare.gif")" class="img-rounded" height="113" width="177"/>
+        </div>
+        <div class='container'>
+            <div class='row' style='height: 144px'>
+                <div class='col-lg-8'>
+                    <h1 id="news-source">Dorota</h1>
+                </div>
+            </div>
+            <div id="headline-container" class="jumbotron">
+                <ul id="headlines">
+                    <li>loading...</li>
+                </ul>
+            </div>
+        </div>
+    </body>
+</html>

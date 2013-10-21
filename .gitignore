@@ -1,0 +1,19 @@
+*.csv
+*.class
+*.log
+
+# sbt specific
+sbt-launch.jar
+dist/*
+target/
+lib_managed/
+src_managed/
+project/boot/
+project/plugins/project/
+todos.txt
+
+# Scala-IDE specific
+.scala_dependencies
+.idea/*
+.idea_modules/*
+dump.rdb
