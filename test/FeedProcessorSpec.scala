@@ -30,17 +30,14 @@ class FeedProcessorSpec extends Specification with Mockito {
       "Obama to Tout Economy While Marking Lehman Fall - ABC News"
   )
 
-  val timeToLive = Option(Duration(1800000L, TimeUnit.MILLISECONDS))
+  val timeToLive = Some(Duration(1800000L, TimeUnit.MILLISECONDS))
 
   val fakeRedisFactory = mock[RedisClientFactory]
   val fakeRedisClient = mock[Client]
   val fakeRetriever = mock[Retriever]
-  val fakeFuture = mock[Future[Option[org.jboss.netty.buffer.ChannelBuffer]]]
-  val fakeStore = mock[RedisStringStore]
   val fakeStoreFactory = mock[RedisStorageFactory]
 
   fakeRedisFactory.createClient returns fakeRedisClient
-  fakeStoreFactory.createStore(fakeRedisClient, timeToLive) returns fakeStore
 
   class TestModule extends ScalaModule {
     def configure = {
@@ -62,8 +59,7 @@ class FeedProcessorSpec extends Specification with Mockito {
       val key = StringToChannelBuffer("Google News")
       val expectedBuffer = StringToChannelBuffer(expectedJson)
 
-      fakeRedisClient.get(key) returns fakeFuture
-      Await.result(fakeFuture) returns Option(expectedBuffer)
+      fakeRedisClient.get(key) returns Future.value { Some(expectedBuffer) }
 
       val result = feedProcessor.headlines("Google News", "http://example.com", fakeRetriever)
       result mustEqual expectedJson
