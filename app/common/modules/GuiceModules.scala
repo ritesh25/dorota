@@ -8,26 +8,16 @@ import com.twitter.finagle.redis.Client
 class ProdModule extends ScalaModule {
   def configure() {
     bind[Retriever].to[FeedRetriever]
-
-    val redisClient = new RedisClientFactory
-    bind[RedisClientFactory].toInstance(redisClient)
-
-    val redisStorageFactory = new RedisStorageFactory
-    bind[RedisStorageFactory].toInstance(redisStorageFactory)
-
-    val processor = new FeedProcessor
-    bind[FeedProcessor].toInstance(processor)
+    bind[RedisClientFactory].toInstance(new RedisClientFactory)
+    bind[RedisStorageFactory].toInstance(new RedisStorageFactory)
+    bind[FeedProcessor].toInstance(new FeedProcessor)
   }
 }
 
 class DevModule extends ScalaModule {
   def configure() {
     bind[Retriever].to[FakeRetriever]
-
-    val redisClient = new RedisClientFactory
-    bind[RedisClientFactory].toInstance(redisClient)
-
-    val redisStorageFactory = new RedisStorageFactory
-    bind[RedisStorageFactory].toInstance(redisStorageFactory)
+    bind[RedisClientFactory].toInstance(new RedisClientFactory)
+    bind[RedisStorageFactory].toInstance(new RedisStorageFactory)
   }
 }
