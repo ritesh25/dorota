@@ -9,10 +9,12 @@ import play.api.test.Helpers._
 import com.twitter.finagle.redis.Client
 import com.twitter.finagle.redis.util.StringToChannelBuffer
 import com.twitter.util.{Await, Future}
-import common.{Dorota, RedisClientFactory, RedisStorageFactory}
+import common.{Dorota, RedisClientFactory, StorageFactory, RedisStorageFactory}
 import java.util.concurrent.TimeUnit
 import com.twitter.util.Duration
 import com.twitter.storehaus.redis.RedisStringStore
+import com.twitter.storehaus.algebra.MergeableStore
+import org.jboss.netty.buffer.ChannelBuffer
 
 class FeedProcessorSpec extends Specification with Mockito {
   sequential
@@ -30,23 +32,18 @@ class FeedProcessorSpec extends Specification with Mockito {
       "Obama to Tout Economy While Marking Lehman Fall - ABC News"
   )
 
-  val timeToLive = Some(Duration(1800000L, TimeUnit.MILLISECONDS))
-
-  val fakeRedisFactory = mock[RedisClientFactory]
-  val fakeRedisClient = mock[Client]
   val fakeRetriever = mock[Retriever]
-  val fakeStoreFactory = mock[RedisStorageFactory]
+  val fakeStoreFactory = mock[StorageFactory]
+  val fakeStore = mock[MergeableStore[ChannelBuffer, String]]
 
-  fakeRedisFactory.createClient returns fakeRedisClient
+  fakeStoreFactory.createStore returns fakeStore
 
   class TestModule extends ScalaModule {
     def configure = {
-      bind[RedisClientFactory].toInstance(fakeRedisFactory)
       bind[Retriever].toInstance(fakeRetriever)
-      bind[RedisStorageFactory].toInstance(fakeStoreFactory)
+      bind[StorageFactory].toInstance(fakeStoreFactory)
     }
   }
-
   Dorota.injector = Guice.createInjector(new TestModule)
 
   val expectedJson = Json.toJson(Json.obj("source" -> "Google News", "headlines" -> fakeHeadlines)).toString
@@ -55,19 +52,17 @@ class FeedProcessorSpec extends Specification with Mockito {
     "be able to return finished JSON" in {
 
       val feedProcessor = new FeedProcessor
-
       val key = StringToChannelBuffer("Google News")
-      val expectedBuffer = StringToChannelBuffer(expectedJson)
 
-      fakeRedisClient.get(key) returns Future.value { Some(expectedBuffer) }
-
+      fakeStore.get(key) returns Future.value { Some(expectedJson) }
       val result = feedProcessor.headlines("Google News", "http://example.com", fakeRetriever)
+
       result mustEqual expectedJson
     }
 
     "read from Redis cache" in {
       running(FakeApplication(additionalConfiguration = inMemoryDatabase())) {
-        there was one(fakeRedisClient).get(StringToChannelBuffer("Google News"))
+        there was one(fakeStore).get(StringToChannelBuffer("Google News"))
       }
     }
   }

@@ -5,17 +5,11 @@ import com.google.inject._
 import java.util.concurrent.TimeUnit
 import com.twitter.finagle.redis.util.StringToChannelBuffer
 import com.twitter.util.{Duration, Await}
-import common.{Dorota, RedisClientFactory, RedisStorageFactory}
+import common.{Dorota, StorageFactory}
 
 class FeedProcessor @Inject() {
-
-  val timeToLive = Option(Duration(1800000L, TimeUnit.MILLISECONDS))
-
-  @transient lazy val redisClient =
-    Dorota.injector.getInstance(classOf[RedisClientFactory]).createClient
-
   @transient lazy val store =
-    Dorota.injector.getInstance(classOf[RedisStorageFactory]).createStore(redisClient, timeToLive)
+    Dorota.injector.getInstance(classOf[StorageFactory]).createStore
 
   def headlines(source: String, feedUrl: String, retriever: Retriever) : String = {
 
@@ -34,10 +28,10 @@ class FeedProcessor @Inject() {
     }
 
     val processedFeed = {
-      Await.result(redisClient.get(StringToChannelBuffer(source))) match {
+      Await.result(store.get(StringToChannelBuffer(source))) match {
         case Some(v) => {
           play.Logger.info(s"Returning result from cache for source $source")
-          new String(v.array)
+          new String(v)
         }
         case None => {
           play.Logger.info(s"source '$source' previously unseen. Generating and setting in cache")

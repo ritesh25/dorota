@@ -7,8 +7,8 @@ import play.api.Play.current
 object Global extends GlobalSettings {
   private lazy val injector = {
     Play.isProd match {
-      case false => Guice.createInjector(new ProdModule)
-      case true => Guice.createInjector(new DevModule)
+      case true => Guice.createInjector(new ProdModule)
+      case false => Guice.createInjector(new DevModule)
     }
   }
 
