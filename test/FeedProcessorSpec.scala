@@ -6,13 +6,9 @@ import com.google.inject._
 import com.tzavellas.sse.guice.ScalaModule
 import play.api.test._
 import play.api.test.Helpers._
-import com.twitter.finagle.redis.Client
 import com.twitter.finagle.redis.util.StringToChannelBuffer
-import com.twitter.util.{Await, Future}
-import common.{Dorota, RedisClientFactory, StorageFactory, RedisStorageFactory}
-import java.util.concurrent.TimeUnit
-import com.twitter.util.Duration
-import com.twitter.storehaus.redis.RedisStringStore
+import com.twitter.util.Future
+import common.{Dorota, StorageFactory}
 import com.twitter.storehaus.algebra.MergeableStore
 import org.jboss.netty.buffer.ChannelBuffer
 
